@@ -23,8 +23,20 @@ def fgrep_function(split_file,conNum,cmdNum):
  
 
 def main():
-  print 'We will search the file', sys.argv[1] ,'with' ,sys.argv[2], sys.argv[3]
 #  splitfile(sys.argv[1])
+  if len(sys.argv) < 3:
+      print("This program requires at least 3 parameter")
+      print("Example: get_query.py <LOG PATH> <Con Num> <CMD Num>")
+      sys.exit(1)
+  print 'The script will search the file', sys.argv[1] ,'with' ,sys.argv[2], sys.argv[3]
+  master_log_file = os.path.dirname(sys.argv[1])
+  master_log_dir  = os.path.basename(sys.argv[1]) 
+  cmd = 'ls '+master_log_dir+'*part*'
+  (status, output) = commands.getstatusoutput(cmd)
+  if status:
+    splitfile(sys.argv[sys.argv[1])
+  else:
+    print "In the master log direcotory, it contains *part* files, the script will skip the log split"
 
 if __name__ == '__main__':
   main()
