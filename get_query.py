@@ -29,22 +29,22 @@ def main():
       print("Example: get_query.py <LOG PATH> <Con Num> <CMD Num>")
       sys.exit(1)
   print 'The script will search the file', sys.argv[1] ,'with' ,sys.argv[2], sys.argv[3]
-  master_log_file = os.path.dirname(sys.argv[1])
-  master_log_dir  = os.path.basename(sys.argv[1]) 
-  cmd = 'ls '+master_log_dir+'*part*'
-  (status, output) = commands.getstatusoutput(cmd)
-  if status:
-    splitfile(sys.argv[sys.argv[1])
-  else:
-    print "In the master log direcotory, it contains *part* files, the script will skip the log split"
 
 if __name__ == '__main__':
   main()
   result=Queue.Queue() 
   pool = Pool(3)
-  cmd = 'ls *part*'
+  master_log_dir = os.path.dirname(sys.argv[1])
+  master_log_file  = os.path.basename(sys.argv[1]) 
+  cmd = 'ls '+master_log_dir+'/*part*'
+  print "The command to run is", cmd
   (status, output) = commands.getstatusoutput(cmd)
+  if status:
+    splitfile(sys.argv[1])
+  else:
+    print "In the master log direcotory, it contains *part* files, the script will skip the log split"
   split_files=output.split()
+  
   def pool_th():
     for i in split_files:
 	try:
