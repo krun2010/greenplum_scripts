@@ -24,8 +24,13 @@ def fgrep_function(split_file,conNum,cmdNum):
 def get_query_from_match_split_file(split_file,conNUM,cmdNUM):
   start_offset=conNUM+','+cmdNUM
   end_offset='[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\} [0-9]\{2\}:[0-9]\{2\}:[0-9]\{2\}'
-  sed_cmd="sed -n '/"+start_offset+"/,/"+end_offset+"/p'"+" "+split_file
+  sed_cmd="sed -n '/"+start_offset+"/,/"+end_offset+"/p'"+" "+split_file+"> " +conNUM+cmdNUM+".out"
   print sed_cmd
+  (status,output) = commands.getstatusoutput(sed_cmd)
+  if status:
+    sys.stderr.write(output)
+    sys.exit(status)
+
   
 def main():
 #  splitfile(sys.argv[1])
@@ -33,7 +38,9 @@ def main():
       print("This program requires at least 3 parameter")
       print("Example: get_query.py <LOG PATH> <Con Num> <CMD Num>")
       sys.exit(1)
+
   print 'The script will search the file', sys.argv[1] ,'with' ,sys.argv[2], sys.argv[3]
+
 
 if __name__ == '__main__':
   main()
@@ -57,7 +64,10 @@ if __name__ == '__main__':
 	   result.put(pool.apply_async(fgrep_function, args=(i,sys.argv[2],sys.argv[3],)))
 	except:
 	   break
-#    pool.terminate()
+    pool.close()
+    pool.join()
+    print "There is no result in the master log"
+    os._exit(1)
 
   def result_th():
     global split_file
