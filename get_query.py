@@ -45,17 +45,17 @@ def main():
 if __name__ == '__main__':
   main()
   result=Queue.Queue() 
-  pool = Pool(3)
+  pool = Pool()
   master_log_dir = os.path.dirname(sys.argv[1])
   master_log_file  = os.path.basename(sys.argv[1]) 
   cmd = 'ls '+master_log_dir+'/*part*'
   print "The command to run is", cmd
-  (status, output) = commands.getstatusoutput(cmd)
-  if status:
+  (status_ls, output) = commands.getstatusoutput(cmd)
+  if status_ls:
     splitfile(sys.argv[1])
   else:
     print "In the master log direcotory, it contains *part* files, thus the script will not split the master log again"
-  (status, output) = commands.getstatusoutput(cmd)
+  (status_ls, output) = commands.getstatusoutput(cmd)
   split_files=output.split()
   
   def pool_th():
@@ -64,18 +64,15 @@ if __name__ == '__main__':
 	   result.put(pool.apply_async(fgrep_function, args=(i,sys.argv[2],sys.argv[3],)))
 	except:
 	   break
-    pool.close()
-    pool.join()
-    print "There is no result in the master log"
-    os._exit(1)
 
   def result_th():
     global split_file
+    global status
     while 1:
       (status,output,split_file)=result.get().get()
       if status == 0:
         pool.terminate()
-	print split_file
+	print "The query can be found in file ", split_file
         break
 
   t1=threading.Thread(target=pool_th)
@@ -83,7 +80,10 @@ if __name__ == '__main__':
   t1.start()
   t2.start()
   t1.join()
-  t2.join()
+  pool.close()
   pool.join()
-  get_query_from_match_split_file(split_file,sys.argv[2],sys.argv[3])
-   
+  if status == 0:
+    get_query_from_match_split_file(split_file,sys.argv[2],sys.argv[3])
+  else:
+    print "Cannot find query in the master log \n"
+    os._exit(1)
